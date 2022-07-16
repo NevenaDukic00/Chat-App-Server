@@ -51,7 +51,7 @@ public class DataBase {
 	}
 	public int checkUser(String email) {
 		
-		
+		//proveravamo postoji li user sa ovim emailom
 		String sql = "SELECT * from chat.user where email = ?";
 		try {
 			preparedStatement = connection.prepareStatement(sql);
@@ -71,6 +71,7 @@ public class DataBase {
 	public void registration(String email,String username,String password) {
 		
 		try {
+			//kreiramo usera
 			String sql = "INSERT into chat.user(email,username,pswd)values(?,?,?)";
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, email);
@@ -141,6 +142,8 @@ public class DataBase {
 		ArrayList<String> contacts = new ArrayList();
 		int id = getId(email);
 		String sql = "SELECT user1_id,user2_id from chat.chat where user1_id=? or user2_id=? ";
+		
+		//trazimo u bazi sve redove gde se zadati mail nalazi na orvom ili drugom mestu, odnosno sve kontakte klijenta
 		try {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, id);
@@ -200,7 +203,7 @@ public class DataBase {
 			System.out.println("Email2 je: " + email2);
 			int id2 = getId(email2);
 			
-			
+			//proveravamo da li chat postoji
 			String sql = "SELECT * from chat.chat where (user1_id=? && user2_id = ?) || (user1_id=? && user2_id = ?)";
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, id1);
@@ -213,6 +216,7 @@ public class DataBase {
 				System.out.println("Chat postoji!");
 				return 1;
 			}else {
+				//ukoliko chat ne postoji dodajemo ga
 				String sql1 = "INSERT into chat.chat(user1_id,user2_id) values(?,?)";
 				System.out.println("USAO OVDEEEEEE!");
 				preparedStatement = connection.prepareStatement(sql1);
@@ -252,6 +256,7 @@ public class DataBase {
 	}
 	public int checkEmail(String email) {
 		try {
+			//proveravamo postoji li user sa tim emailom
 			String sql = "SELECT * from chat.user where email=?";
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1,email);
@@ -278,6 +283,7 @@ public class DataBase {
 			preparedStatement.setInt(1, chat_id);
 			ResultSet status = preparedStatement.executeQuery();
 			while (status.next()) {
+				//uzimam poruku u formatu user;poruka kako bismo znali koji korisnik je sta napisao i to smestam u niz
 				messages[k++] = getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3));
 				System.out.println(messages[k-1]);
 			}

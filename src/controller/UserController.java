@@ -37,21 +37,20 @@ public class UserController extends Thread {
 	}
 	
 	private void registration() throws IOException {
-		
+		//zelimo da registrujemo korisnika i proveravamo da li vec postoji korisnik sa tim mailom
+		//uzimamo podatke
 		String email = inputStream.readUTF();
 		String username = inputStream.readUTF();
 		String password = inputStream.readUTF();
-		System.out.println("IDE KA BAZI");
+		
 		if (dataBase.checkUser(email)==0) {
-			System.out.println("NEMA EMAILA");
-			
+			//ukoliko nema usera sa unetim mailom onda ga pravimo
 			dataBase.registration(email, username, password);
-			
 			outputStream.writeInt(1);
 			outputStream.writeInt(1);
 			
 		}else {
-			System.out.println("IMA EMAILA!");
+			//ima emaila, ne pravimo usera i saljemo poruku da user vec postoji
 			outputStream.writeInt(1);
 			outputStream.writeInt(0);
 		}
@@ -60,16 +59,19 @@ public class UserController extends Thread {
 	}
 	private void checkUser() {
 		try {
-			System.out.println("USAO U CHECKUSER U SERVERU!");
+			//uzimamo podatke i proveravamo da li user sa tim emailom i sifrom postoji u bazi
 			String email = inputStream.readUTF();
 			String password = inputStream.readUTF();
+			
 			if (dataBase.chechUserSignIn(email, password)==1) {
 				this.id = dataBase.getId(email);
-				System.out.println("ID JE: " + id);
+				//ukoliko postoji, dodajemo ga u listu aktivnih klijenatas
 				ClientList.addClient(UserController.this);
+				//saljemo signal da user postoji
 				outputStream.writeInt(2);
 				outputStream.writeInt(1);
 				System.out.println("PORT ODNOSNO ID JE: " + dataBase.getId(email));
+				//ovde saljemo port
 				outputStream.writeInt(dataBase.getId(email));
 			}else {
 				outputStream.writeInt(2);
@@ -85,13 +87,15 @@ public class UserController extends Thread {
 	private void addChat() {
 		
 		try {
+			
 			String email1 = inputStream.readUTF();
 			String email2 = inputStream.readUTF();
+			
 			int status = dataBase.addChat(email1, email2);
 			String [] messages = new String[200];
 			
 			if (status==1) {
-				
+				//ukoliko chat postoji uzimamo sve zapisane poruke iz njega
 				messages = dataBase.getMessages(dataBase.getChatId(dataBase.getId(email1),dataBase.getId(email2)));
 				outputStream.writeInt(3);
 				for (int i = 0; i < messages.length; i++) {
@@ -147,9 +151,10 @@ public class UserController extends Thread {
 	private void checkEmail() {
 		
 		try {
+			//proveravamo posotji li user sa tim emailom
 			String email = inputStream.readUTF();
 			int status = dataBase.checkEmail(email);
-			System.out.println("STATUS JE: " + status);
+			//saljemo rezultat pretrage
 			outputStream.writeInt(5);
 			outputStream.writeInt(status);
 			outputStream.flush();
@@ -161,6 +166,7 @@ public class UserController extends Thread {
 	private void getContacts() {
 		
 		try {
+			//uzimamo sve kontakte id tog usera
 			String email = inputStream.readUTF();
 			ArrayList<String> contacts = dataBase.getContacts(email);
 			int length = contacts.size();
@@ -168,6 +174,7 @@ public class UserController extends Thread {
 			int k = 0;
 			outputStream.writeInt(6);
 			outputStream.writeInt(length);
+			//saljemo sve kontakte
 			while (k<length) {
 				outputStream.writeUTF(contacts.get(k));
 				k++;
