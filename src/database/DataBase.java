@@ -175,9 +175,11 @@ public class DataBase {
 		int id1 = getId(email1);
 		int id2 = getId(email2);
 		
+		//trazimo chat izmedju navedena dva korisnika
 		int chat = getChatId(id1, id2);
 		System.out.println("Message je: " + message);
 		try {
+			//pronadjenom chatu dodajemo poruku i id usera koji je poslao poruku
 			String sql = "INSERT into chat.messages(chat_id,message,id_user)values(?,?,?)";
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1,chat);

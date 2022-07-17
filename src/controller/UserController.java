@@ -120,6 +120,7 @@ public class UserController extends Thread {
 			@Override
 			public void run() {
 				try {
+					//saljemo poruku
 					outputStream.writeInt(4);
 					outputStream.writeUTF(message);
 					outputStream.flush();
@@ -135,11 +136,14 @@ public class UserController extends Thread {
 	private void addMessage() {
 		
 		try {
+			//prihavta email posiljaoca, primaoca i poruku
 			String email1 = inputStream.readUTF();
 			String email2 = inputStream.readUTF();
 			String message = inputStream.readUTF();
 			System.out.println("PORUKA JE: " + message);
+			//saljemo to ka bazi
 			dataBase.addMessage(email1, email2, message);
+			//saljemo poruku drugom klijentu, ali prvo uzimo id tog klijenta kome saljemo
 			ClientList.sendMessage(dataBase.getId(email2),message);
 			
 		} catch (IOException e) {

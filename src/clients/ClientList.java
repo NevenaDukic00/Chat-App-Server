@@ -14,11 +14,13 @@ public class ClientList {
 	public static void sendMessage(int id,String message) {
 		System.out.println("USAO U SEND MESSAGE");
 		for (UserController userController : clients) {
+			//pronalazimo klijenta sa zadatim idjem
 			System.out.println("TRAZI KLIJENTA!");
 			System.out.println(userController.id + "== " + id);
 			if (userController.id==id) {
 				System.out.println("NASAO ZA KOMUNIKACIJU!");
 				System.out.println(userController.id);
+				//saljemo poruku tom klijentu
 				userController.sendMessage(message);
 			}
 		}
