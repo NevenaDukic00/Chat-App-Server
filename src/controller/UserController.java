@@ -193,7 +193,7 @@ public class UserController extends Thread {
 	public void sendPort() {
 		try {
 			String email = inputStream.readUTF();
-			
+			//saljemo port toga klijenta za peer
 			outputStream.writeInt(7);
 			outputStream.writeInt(dataBase.getId(email));
 			outputStream.flush();
