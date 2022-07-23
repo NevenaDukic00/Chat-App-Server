@@ -13,6 +13,9 @@ public class MainServerChat {
 		
 		ServerSocket serverSocket;
 		try {
+			//mislim da ovo treba da se koristi da bi se preko LAN-a povezivali
+			//serverSocket = new ServerSocket(8888, 2, IPracunara)
+			
 			serverSocket = new ServerSocket(8888);
 			while (true) {
 				System.out.println("SERVER!");
