@@ -256,6 +256,25 @@ public class DataBase {
 		
 		return null;
 	}
+	public String getUserName(int id) {
+		
+		try {
+			String sql = "SELECT * from chat.user where id=?";
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setInt(1, id);
+			ResultSet status = preparedStatement.executeQuery();
+			while (status.next()) {
+				System.out.println("Id usera je: " + status.getInt("id"));
+				return status.getString("username");
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 	public int checkEmail(String email) {
 		try {
 			//proveravamo postoji li user sa tim emailom
@@ -273,10 +292,10 @@ public class DataBase {
 		}
 		return 0;
 	}
-	public String[] getMessages(int chat_id) {
+	public ArrayList<String> getMessages(int chat_id) {
 		
 		String sql = "SELECT * from chat.messages where chat_id=?";
-		String [] messages = new String[200];
+		ArrayList<String> messages = new ArrayList<>();
 		
 		int k = 0;
 		
@@ -286,8 +305,8 @@ public class DataBase {
 			ResultSet status = preparedStatement.executeQuery();
 			while (status.next()) {
 				//uzimam poruku u formatu user;poruka kako bismo znali koji korisnik je sta napisao i to smestam u niz
-				messages[k++] = getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3));
-				System.out.println(messages[k-1]);
+				messages.add(getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3)).concat("#").concat(getUserName(status.getInt(4))));
+				//System.out.println(messages[k-1]);
 			}
 			return messages;
 		} catch (SQLException e) {

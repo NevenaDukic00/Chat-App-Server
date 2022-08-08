@@ -22,8 +22,6 @@ public class UserController extends Thread {
 	
 	public int id;
 	
-	
-	
 	public UserController(Socket socket) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		this.socket = socket;
 		try {
@@ -63,6 +61,7 @@ public class UserController extends Thread {
 			String email = inputStream.readUTF();
 			String password = inputStream.readUTF();
 			
+			String ip = inputStream.readUTF();
 			if (dataBase.chechUserSignIn(email, password)==1) {
 				this.id = dataBase.getId(email);
 				//ukoliko postoji, dodajemo ga u listu aktivnih klijenatas
@@ -70,6 +69,21 @@ public class UserController extends Thread {
 				//saljemo signal da user postoji
 				outputStream.writeInt(2);
 				outputStream.writeInt(1);
+				int position = ip.indexOf("/");
+				String ip1 = ip.substring(position+1);
+				System.out.println("DUZINA LISTE PRE NOVOG JE: " + Users.users.size());
+				System.out.println("UPISAO JE NOVOG USERA");
+				System.out.println("IP JE:  " + ip1);
+				Users.users.add(new User(ip1,dataBase.getId(email)));
+				System.out.println("*********************************");
+				System.out.println("DUZINA LISTE JE: " + Users.users.size());
+				for(int i = 0;i<Users.users.size();i++) {
+					
+					System.out.println("PORT JE: " + Users.users.get(i).getPort() + "; ip je: " + Users.users.get(i).getIp());
+				}
+				System.out.println("*********************************");
+				
+				
 				System.out.println("PORT ODNOSNO ID JE: " + dataBase.getId(email));
 				//ovde saljemo port
 				outputStream.writeInt(dataBase.getId(email));
@@ -92,18 +106,18 @@ public class UserController extends Thread {
 			String email2 = inputStream.readUTF();
 			
 			int status = dataBase.addChat(email1, email2);
-			String [] messages = new String[200];
+			ArrayList<String> messages = new ArrayList<>();
 			
 			if (status==1) {
 				//ukoliko chat postoji uzimamo sve zapisane poruke iz njega
 				messages = dataBase.getMessages(dataBase.getChatId(dataBase.getId(email1),dataBase.getId(email2)));
 				outputStream.writeInt(3);
-				for (int i = 0; i < messages.length; i++) {
-					if (messages[i]==null) {
-						break;
-					}
-					System.out.println("Poruka: " + messages[i]);
-					outputStream.writeUTF(messages[i]);
+				for (int i = 0; i < messages.size(); i++) {
+//					if (messages.get(i)==null) {
+//						break;
+//					}
+					System.out.println("Poruka: " + messages.get(i));
+					outputStream.writeUTF(messages.get(i));
 				}
 				outputStream.writeUTF("end of messages");
 				outputStream.flush();
@@ -189,13 +203,52 @@ public class UserController extends Thread {
 			e.printStackTrace();
 		}
 	}
-			
+	
+	public void logOff() {
+		try {
+			System.out.println("ID JE ZA LOG OFF JE: " + this.id);
+			ClientList.removeUser(this.id);
+			Users.removeUser(this.id);
+			outputStream.writeInt(8);
+			outputStream.flush();
+			socket.close();
+			inputStream.close();
+			outputStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void sendPort() {
 		try {
 			String email = inputStream.readUTF();
 			//saljemo port toga klijenta za peer
+			
+			int status = Users.isActive(dataBase.getId(email));
 			outputStream.writeInt(7);
-			outputStream.writeInt(dataBase.getId(email));
+			if(status==1) {
+				outputStream.writeInt(1);
+				int port = dataBase.getId(email);
+				String ip = "";
+				for(int i = 0;i<Users.users.size();i++) {
+					System.out.println("USAO DA DOBIJE PORT");
+					System.out.println(Users.users.get(i).getPort() + "==" + port);
+					if(Users.users.get(i).getPort()==port) {
+						ip = Users.users.get(i).getIp();
+						System.out.println("Pronasap ga je, ip je: " + ip);
+					}
+				}
+				
+				
+				outputStream.writeInt(port);
+				outputStream.writeUTF(ip);
+			}else {
+				outputStream.writeInt(0);
+			}
+			
+			
+			
 			outputStream.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -230,6 +283,9 @@ public class UserController extends Thread {
 					break;
 				case 7:
 					sendPort();
+					break;
+				case 8:
+					logOff();
 					break;
 				default:
 					break;

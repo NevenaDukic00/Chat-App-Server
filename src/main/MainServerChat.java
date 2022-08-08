@@ -2,6 +2,7 @@ package main;
 
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -15,7 +16,7 @@ public class MainServerChat {
 		try {
 			//mislim da ovo treba da se koristi da bi se preko LAN-a povezivali
 			//serverSocket = new ServerSocket(8888, 2, IPracunara)
-			
+			System.out.println("IP je: " + InetAddress.getLocalHost());
 			serverSocket = new ServerSocket(8888);
 			while (true) {
 				System.out.println("SERVER!");

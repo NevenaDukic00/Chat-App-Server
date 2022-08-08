@@ -27,4 +27,19 @@ public class ClientList {
 		
 		
 	}
+	public static void removeUser(int id) {
+		
+		System.out.println("Ulazi u brisanje!");
+		int i = 0;
+		for(UserController userController:clients) {
+			if(userController.id==id) {
+				clients.remove(i);
+				System.out.println("Izbrisan!");
+				return;
+			}
+			i++;
+		}
+		
+	}
+	
 }
