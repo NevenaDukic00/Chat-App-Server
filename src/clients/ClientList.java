@@ -11,7 +11,7 @@ public class ClientList {
 	public static void addClient(UserController u) {
 		clients.add(u);
 	}
-	public static void sendMessage(int id,String message) {
+	public static void sendMessage(int id,String message,String user) {
 		System.out.println("USAO U SEND MESSAGE");
 		for (UserController userController : clients) {
 			//pronalazimo klijenta sa zadatim idjem
@@ -21,11 +21,9 @@ public class ClientList {
 				System.out.println("NASAO ZA KOMUNIKACIJU!");
 				System.out.println(userController.id);
 				//saljemo poruku tom klijentu
-				userController.sendMessage(message);
+				userController.sendMessage(message,user);
 			}
 		}
-		
-		
 	}
 	public static void removeUser(int id) {
 		

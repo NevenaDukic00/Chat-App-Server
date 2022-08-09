@@ -75,6 +75,7 @@ public class UserController extends Thread {
 				System.out.println("UPISAO JE NOVOG USERA");
 				System.out.println("IP JE:  " + ip1);
 				Users.users.add(new User(ip1,dataBase.getId(email)));
+				//Users.users.add(new User(ip1,8080));
 				System.out.println("*********************************");
 				System.out.println("DUZINA LISTE JE: " + Users.users.size());
 				for(int i = 0;i<Users.users.size();i++) {
@@ -128,14 +129,16 @@ public class UserController extends Thread {
 			e.printStackTrace();
 		}
 	}
-	public void sendMessage(String message) {
+	public void sendMessage(String message,String user) {
 		new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
 				try {
 					//saljemo poruku
+					
 					outputStream.writeInt(4);
+					outputStream.writeUTF(user);
 					outputStream.writeUTF(message);
 					outputStream.flush();
 				} catch (IOException e) {
@@ -158,7 +161,7 @@ public class UserController extends Thread {
 			//saljemo to ka bazi
 			dataBase.addMessage(email1, email2, message);
 			//saljemo poruku drugom klijentu, ali prvo uzimo id tog klijenta kome saljemo
-			ClientList.sendMessage(dataBase.getId(email2),message);
+			ClientList.sendMessage(dataBase.getId(email2),message,dataBase.getUserName(id));
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

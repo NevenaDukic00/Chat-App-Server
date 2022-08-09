@@ -18,6 +18,7 @@ public class MainServerChat {
 			//serverSocket = new ServerSocket(8888, 2, IPracunara)
 			System.out.println("IP je: " + InetAddress.getLocalHost());
 			serverSocket = new ServerSocket(8888);
+			//serverSocket = new Ser
 			while (true) {
 				System.out.println("SERVER!");
 				Socket socket = serverSocket.accept();
