@@ -4,8 +4,14 @@ public class User {
 
 	private String ip;
 	private int port;
+	private String activeContact;
 	
-	
+	public String getActiveContact() {
+		return activeContact;
+	}
+	public void setActiveContact(String activeContact) {
+		this.activeContact = activeContact;
+	}
 	public User(String ip, int port) {
 		super();
 		this.ip = ip;

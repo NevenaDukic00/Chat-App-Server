@@ -41,15 +41,13 @@ public class UserController extends Thread {
 		String username = inputStream.readUTF();
 		String password = inputStream.readUTF();
 		
+		outputStream.writeInt(1);
 		if (dataBase.checkUser(email)==0) {
 			//ukoliko nema usera sa unetim mailom onda ga pravimo
 			dataBase.registration(email, username, password);
 			outputStream.writeInt(1);
-			outputStream.writeInt(1);
-			
 		}else {
-			//ima emaila, ne pravimo usera i saljemo poruku da user vec postoji
-			outputStream.writeInt(1);
+			//ima emaila, saljemo poruku da user vec postoji
 			outputStream.writeInt(0);
 		}
 		outputStream.flush();
@@ -61,35 +59,38 @@ public class UserController extends Thread {
 			String email = inputStream.readUTF();
 			String password = inputStream.readUTF();
 			
+			//uzimamo ip adresu
 			String ip = inputStream.readUTF();
+			
+			outputStream.writeInt(2);
+			//proveravamo da li user postoji u bazi
 			if (dataBase.chechUserSignIn(email, password)==1) {
+				
 				this.id = dataBase.getId(email);
-				//ukoliko postoji, dodajemo ga u listu aktivnih klijenatas
-				ClientList.addClient(UserController.this);
-				//saljemo signal da user postoji
-				outputStream.writeInt(2);
-				outputStream.writeInt(1);
-				int position = ip.indexOf("/");
-				String ip1 = ip.substring(position+1);
-				System.out.println("DUZINA LISTE PRE NOVOG JE: " + Users.users.size());
-				System.out.println("UPISAO JE NOVOG USERA");
-				System.out.println("IP JE:  " + ip1);
-				Users.users.add(new User(ip1,dataBase.getId(email)));
-				//Users.users.add(new User(ip1,8080));
-				System.out.println("*********************************");
-				System.out.println("DUZINA LISTE JE: " + Users.users.size());
-				for(int i = 0;i<Users.users.size();i++) {
+				
+				//proveravamo da li je user vec logovan u aplikaciju
+				if(ClientList.checkActiveUser(dataBase.getId(email))==0) {
+					//ukoliko nije ovo se izvrsava
+					outputStream.writeInt(1);
+					//ubacujemo klijenta u listu aktivnih Socketa
 					
-					System.out.println("PORT JE: " + Users.users.get(i).getPort() + "; ip je: " + Users.users.get(i).getIp());
+					ClientList.addClient(UserController.this);
+					
+					//uzimamo potreban deo ip adrese
+					int position = ip.indexOf("/");
+					String ip1 = ip.substring(position+1);
+					
+					//ubacujemo korisnika u listu aktivnih korisnika
+					Users.users.add(new User(ip1,dataBase.getId(email)));
+					
+					//ovde saljemo port korisniku kako bi on pokrenuo Server za p2p komunikaciju
+					outputStream.writeInt(dataBase.getId(email));
+				}else {
+					//ukoliko je korinsik vec ulogovan saljemo 2
+					outputStream.writeInt(2);
 				}
-				System.out.println("*********************************");
-				
-				
-				System.out.println("PORT ODNOSNO ID JE: " + dataBase.getId(email));
-				//ovde saljemo port
-				outputStream.writeInt(dataBase.getId(email));
 			}else {
-				outputStream.writeInt(2);
+				//ukoliko ne postoji user sa unetim podacima saljemo 0
 				outputStream.writeInt(0);
 			}
 			outputStream.flush();
@@ -106,22 +107,26 @@ public class UserController extends Thread {
 			String email1 = inputStream.readUTF();
 			String email2 = inputStream.readUTF();
 			
+			//proveravamo da li chat postoji
 			int status = dataBase.addChat(email1, email2);
+			
+			
 			ArrayList<String> messages = new ArrayList<>();
+			
+			//kako bismo znali koji korisnik prica sa kim u kom trenutku, 
+			//u listi aktivnih korisnika dodajemo da se trenutno nalazimo u chatu sa korisnikom sa email1
+			Users.setConatct(id, email1);
 			
 			if (status==1) {
 				//ukoliko chat postoji uzimamo sve zapisane poruke iz njega
 				messages = dataBase.getMessages(dataBase.getChatId(dataBase.getId(email1),dataBase.getId(email2)));
 				outputStream.writeInt(3);
 				for (int i = 0; i < messages.size(); i++) {
-//					if (messages.get(i)==null) {
-//						break;
-//					}
-					System.out.println("Poruka: " + messages.get(i));
 					outputStream.writeUTF(messages.get(i));
 				}
 				outputStream.writeUTF("end of messages");
 				outputStream.flush();
+				
 			}
 			
 		} catch (IOException e) {
@@ -135,8 +140,7 @@ public class UserController extends Thread {
 			@Override
 			public void run() {
 				try {
-					//saljemo poruku
-					
+					//saljemo username korisnika od koga prima poruku i poruku
 					outputStream.writeInt(4);
 					outputStream.writeUTF(user);
 					outputStream.writeUTF(message);
@@ -157,10 +161,10 @@ public class UserController extends Thread {
 			String email1 = inputStream.readUTF();
 			String email2 = inputStream.readUTF();
 			String message = inputStream.readUTF();
-			System.out.println("PORUKA JE: " + message);
+			
 			//saljemo to ka bazi
 			dataBase.addMessage(email1, email2, message);
-			//saljemo poruku drugom klijentu, ali prvo uzimo id tog klijenta kome saljemo
+			//saljemo poruku drugom klijentu i username klijenta od koga prima poruku, ali prvo uzimo id tog klijenta kome saljemo
 			ClientList.sendMessage(dataBase.getId(email2),message,dataBase.getUserName(id));
 			
 		} catch (IOException e) {
@@ -172,7 +176,7 @@ public class UserController extends Thread {
 	private void checkEmail() {
 		
 		try {
-			//proveravamo posotji li user sa tim emailom
+			//proveravamo postoji li user sa tim emailom
 			String email = inputStream.readUTF();
 			int status = dataBase.checkEmail(email);
 			//saljemo rezultat pretrage
@@ -187,8 +191,9 @@ public class UserController extends Thread {
 	private void getContacts() {
 		
 		try {
-			//uzimamo sve kontakte id tog usera
+			//uzimamo sve kontakte tog usera
 			String email = inputStream.readUTF();
+			
 			ArrayList<String> contacts = dataBase.getContacts(email);
 			int length = contacts.size();
 		
@@ -209,9 +214,10 @@ public class UserController extends Thread {
 	
 	public void logOff() {
 		try {
-			System.out.println("ID JE ZA LOG OFF JE: " + this.id);
+			//server uklanja korinsika iz liste aktivnih usera
 			ClientList.removeUser(this.id);
 			Users.removeUser(this.id);
+			//vraca povratnu poruku da je primio obavestenje i zatvara streamove i socket za tog korisnika
 			outputStream.writeInt(8);
 			outputStream.flush();
 			socket.close();
@@ -225,25 +231,28 @@ public class UserController extends Thread {
 	
 	public void sendPort() {
 		try {
-			String email = inputStream.readUTF();
-			//saljemo port toga klijenta za peer
 			
-			int status = Users.isActive(dataBase.getId(email));
+			
+			String email = inputStream.readUTF();
+			
+			//proveravamo da li je korinsik kome saljemo glasovnu poruku na mrezi i u nasem chatu
+			int status = Users.isActive(dataBase.getEmail(id),dataBase.getId(email));
+			
 			outputStream.writeInt(7);
+			//ukoliko je korisnik aktivan i u nasem chatu:
 			if(status==1) {
 				outputStream.writeInt(1);
+				//uzimamo korisnikov port
 				int port = dataBase.getId(email);
 				String ip = "";
+				//trazimo ip adresu korisnika
 				for(int i = 0;i<Users.users.size();i++) {
-					System.out.println("USAO DA DOBIJE PORT");
-					System.out.println(Users.users.get(i).getPort() + "==" + port);
 					if(Users.users.get(i).getPort()==port) {
 						ip = Users.users.get(i).getIp();
-						System.out.println("Pronasap ga je, ip je: " + ip);
+						break;
 					}
 				}
-				
-				
+				//saljemo port i ip
 				outputStream.writeInt(port);
 				outputStream.writeUTF(ip);
 			}else {
@@ -258,13 +267,25 @@ public class UserController extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	public void removeContact() {
+		
+		try {
+			//azuriramo da korisnik vise ne komunicira ni sa kim(nije ni u jendom chatu)
+			String email = inputStream.readUTF();
+			Users.removeContatc(dataBase.getId(email));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	@Override
 	public void run() {
 		while (true) {
 			try {
 				
 				int message = inputStream.readInt();
-				System.out.println("MESSAGE je : " + message);
+				
 				switch (message) {
 				case 1:
 					registration();
@@ -289,6 +310,9 @@ public class UserController extends Thread {
 					break;
 				case 8:
 					logOff();
+					break;
+				case 10:
+					removeContact();
 					break;
 				default:
 					break;

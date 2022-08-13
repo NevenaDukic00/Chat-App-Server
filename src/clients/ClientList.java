@@ -12,18 +12,25 @@ public class ClientList {
 		clients.add(u);
 	}
 	public static void sendMessage(int id,String message,String user) {
-		System.out.println("USAO U SEND MESSAGE");
+		
+		//prolazimo kroz listu aktivnih klijenata da vidimo da lije korisnik kome saljemo poruku na mrezi
 		for (UserController userController : clients) {
-			//pronalazimo klijenta sa zadatim idjem
-			System.out.println("TRAZI KLIJENTA!");
-			System.out.println(userController.id + "== " + id);
+			//pronalazimo klijenta sa zadatim id-jem
 			if (userController.id==id) {
-				System.out.println("NASAO ZA KOMUNIKACIJU!");
-				System.out.println(userController.id);
 				//saljemo poruku tom klijentu
 				userController.sendMessage(message,user);
 			}
 		}
+	}
+	
+	public static int checkActiveUser(int id) {
+		for(UserController userController:clients) {
+			if(userController.id==id) {
+				return 1;
+			}
+		}
+		return 0;
+		
 	}
 	public static void removeUser(int id) {
 		

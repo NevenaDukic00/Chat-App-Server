@@ -18,13 +18,35 @@ public class Users {
 		}
 	}
 	
-	public static int isActive(int port) {
-		int i = 0;
+	public static void setConatct(int id, String email) {
+		
+		for(User user:users) {
+			if(user.getPort()==id) {
+				user.setActiveContact(email);
+				return;
+			}
+			
+		}
+	}
+	public static void removeContatc(int port) {
 		for(User user:users) {
 			if(user.getPort()==port) {
+				//postavljamo da je korisnik sa kojim pricamo null
+				user.setActiveContact(null);
+				return;
+			}
+			
+		}
+		
+	}
+	public static int isActive(String email,int port) {
+	
+		for(User user:users) {
+			
+			if(user.getPort()==port && (user.getActiveContact()!=null && user.getActiveContact().equals(email))) {
 				return 1;
 			}
-			i++;
+			
 		}
 		
 		return 0;

@@ -32,6 +32,7 @@ public class DataBase {
 	
 	public int chechUserSignIn(String email,String password) {
 		
+		//proveravamo da li user postoji
 		String sql = "SELECT * from chat.user where email = ? and pswd = ?";
 		try {
 			preparedStatement = connection.prepareStatement(sql);
@@ -143,7 +144,7 @@ public class DataBase {
 		int id = getId(email);
 		String sql = "SELECT user1_id,user2_id from chat.chat where user1_id=? or user2_id=? ";
 		
-		//trazimo u bazi sve redove gde se zadati mail nalazi na orvom ili drugom mestu, odnosno sve kontakte klijenta
+		//trazimo u bazi sve redove gde se zadati mail nalazi na prvom ili drugom mestu, odnosno sve kontakte klijenta
 		try {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, id);
@@ -151,14 +152,9 @@ public class DataBase {
 			ResultSet status = preparedStatement.executeQuery();
 			
 			while (status.next()) {
-				System.out.println("NASAO CONTACTA@");
-				System.out.println("Prvi je " +status.getString("user1_id") + " drugi je: " + status.getString("user2_id") );
-				System.out.println(getEmail(status.getInt(1)));
 				if (getEmail(status.getInt(1)).equals(email)) {
-					System.out.println("Prvi je!");
 					contacts.add(getEmail(status.getInt(2)));
 				}else {
-					System.out.println("Drugi je!");
 					contacts.add(getEmail(status.getInt(1)));
 				}
 			}
@@ -177,7 +173,7 @@ public class DataBase {
 		
 		//trazimo chat izmedju navedena dva korisnika
 		int chat = getChatId(id1, id2);
-		System.out.println("Message je: " + message);
+		
 		try {
 			//pronadjenom chatu dodajemo poruku i id usera koji je poslao poruku
 			String sql = "INSERT into chat.messages(chat_id,message,id_user)values(?,?,?)";
@@ -214,8 +210,6 @@ public class DataBase {
 			preparedStatement.setInt(4, id1);
 			ResultSet status = preparedStatement.executeQuery();
 			if (status.next()) {
-				System.out.println("Chat je: " + status.getInt(1));
-				System.out.println("Chat postoji!");
 				return 1;
 			}else {
 				//ukoliko chat ne postoji dodajemo ga
@@ -228,7 +222,7 @@ public class DataBase {
 				if (status1!=0) {
 					System.out.println("Napravljen chat!");
 				}
-				return 1;
+				return 0;
 			}
 
 		} catch (SQLException e) {
@@ -297,16 +291,15 @@ public class DataBase {
 		String sql = "SELECT * from chat.messages where chat_id=?";
 		ArrayList<String> messages = new ArrayList<>();
 		
-		int k = 0;
 		
 		try {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, chat_id);
 			ResultSet status = preparedStatement.executeQuery();
 			while (status.next()) {
-				//uzimam poruku u formatu user;poruka kako bismo znali koji korisnik je sta napisao i to smestam u niz
+				//uzimam poruku u formatu (email korisninka koji je poslao poruku;poruka#username kako bismo znali koji korisnik je sta napisao) i to smestamo u listu
 				messages.add(getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3)).concat("#").concat(getUserName(status.getInt(4))));
-				//System.out.println(messages[k-1]);
+				
 			}
 			return messages;
 		} catch (SQLException e) {
