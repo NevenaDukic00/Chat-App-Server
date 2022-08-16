@@ -116,18 +116,22 @@ public class UserController extends Thread {
 			//kako bismo znali koji korisnik prica sa kim u kom trenutku, 
 			//u listi aktivnih korisnika dodajemo da se trenutno nalazimo u chatu sa korisnikom sa email1
 			Users.setConatct(id, email1);
-			
+			outputStream.writeInt(3);
+			outputStream.writeUTF(dataBase.getUserName(dataBase.getId(email1)));
+			outputStream.writeInt(status);
 			if (status==1) {
 				//ukoliko chat postoji uzimamo sve zapisane poruke iz njega
+				System.out.println("USAO DA CITA PORUKE!");
 				messages = dataBase.getMessages(dataBase.getChatId(dataBase.getId(email1),dataBase.getId(email2)));
-				outputStream.writeInt(3);
+				
 				for (int i = 0; i < messages.size(); i++) {
 					outputStream.writeUTF(messages.get(i));
 				}
 				outputStream.writeUTF("end of messages");
-				outputStream.flush();
+				
 				
 			}
+			outputStream.flush();
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -141,6 +145,7 @@ public class UserController extends Thread {
 			public void run() {
 				try {
 					//saljemo username korisnika od koga prima poruku i poruku
+					System.out.println("USAO DA SALJE PORUKU");
 					outputStream.writeInt(4);
 					outputStream.writeUTF(user);
 					outputStream.writeUTF(message);
@@ -158,10 +163,11 @@ public class UserController extends Thread {
 		
 		try {
 			//prihavta email posiljaoca, primaoca i poruku
+			
 			String email1 = inputStream.readUTF();
 			String email2 = inputStream.readUTF();
 			String message = inputStream.readUTF();
-			
+			System.out.println("SALJE PORUKU KA BAZI");
 			//saljemo to ka bazi
 			dataBase.addMessage(email1, email2, message);
 			//saljemo poruku drugom klijentu i username klijenta od koga prima poruku, ali prvo uzimo id tog klijenta kome saljemo

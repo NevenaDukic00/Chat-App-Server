@@ -298,7 +298,7 @@ public class DataBase {
 			ResultSet status = preparedStatement.executeQuery();
 			while (status.next()) {
 				//uzimam poruku u formatu (email korisninka koji je poslao poruku;poruka#username kako bismo znali koji korisnik je sta napisao) i to smestamo u listu
-				messages.add(getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3)).concat("#").concat(getUserName(status.getInt(4))));
+				messages.add(getEmail(status.getInt(4)).toString().concat(";").concat(status.getString(3)));
 				
 			}
 			return messages;

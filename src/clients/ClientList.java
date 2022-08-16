@@ -17,6 +17,7 @@ public class ClientList {
 		for (UserController userController : clients) {
 			//pronalazimo klijenta sa zadatim id-jem
 			if (userController.id==id) {
+				System.out.println("NASAO KLIJENTA I SALJE MU");
 				//saljemo poruku tom klijentu
 				userController.sendMessage(message,user);
 			}
