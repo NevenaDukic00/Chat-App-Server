@@ -116,6 +116,7 @@ public class UserController extends Thread {
 			//kako bismo znali koji korisnik prica sa kim u kom trenutku, 
 			//u listi aktivnih korisnika dodajemo da se trenutno nalazimo u chatu sa korisnikom sa email1
 			Users.setConatct(id, email1);
+			
 			outputStream.writeInt(3);
 			outputStream.writeUTF(dataBase.getUserName(dataBase.getId(email1)));
 			outputStream.writeInt(status);
@@ -170,8 +171,12 @@ public class UserController extends Thread {
 			System.out.println("SALJE PORUKU KA BAZI");
 			//saljemo to ka bazi
 			dataBase.addMessage(email1, email2, message);
+			//proveravamo da li je korisnik sa kojim zelimo da se povezemo u chatu sa nama, ukoliko jeste 
 			//saljemo poruku drugom klijentu i username klijenta od koga prima poruku, ali prvo uzimo id tog klijenta kome saljemo
-			ClientList.sendMessage(dataBase.getId(email2),message,dataBase.getUserName(id));
+			if(Users.isActive(email1, dataBase.getId(email2))==1) {
+				ClientList.sendMessage(dataBase.getId(email2),message,dataBase.getUserName(id));
+			}
+			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
