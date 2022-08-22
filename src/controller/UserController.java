@@ -62,6 +62,9 @@ public class UserController extends Thread {
 			//uzimamo ip adresu
 			String ip = inputStream.readUTF();
 			
+			//uzimamo broj porta:
+			int port = inputStream.readInt();
+			
 			outputStream.writeInt(2);
 			//proveravamo da li user postoji u bazi
 			if (dataBase.chechUserSignIn(email, password)==1) {
@@ -81,10 +84,11 @@ public class UserController extends Thread {
 					String ip1 = ip.substring(position+1);
 					
 					//ubacujemo korisnika u listu aktivnih korisnika
-					Users.users.add(new User(ip1,dataBase.getId(email)));
+					System.out.println("DODALI SMO: ID:" + dataBase.getId(email) + " port je: " + port);
+					Users.users.add(new User(ip1,port,dataBase.getId(email)));
 					
 					//ovde saljemo port korisniku kako bi on pokrenuo Server za p2p komunikaciju
-					outputStream.writeInt(dataBase.getId(email));
+					outputStream.writeInt(port);
 				}else {
 					//ukoliko je korinsik vec ulogovan saljemo 2
 					outputStream.writeInt(2);
@@ -253,13 +257,15 @@ public class UserController extends Thread {
 			//ukoliko je korisnik aktivan i u nasem chatu:
 			if(status==1) {
 				outputStream.writeInt(1);
-				//uzimamo korisnikov port
-				int port = dataBase.getId(email);
+				
+				int id = dataBase.getId(email);
+				int port = 0;
 				String ip = "";
-				//trazimo ip adresu korisnika
+				//trazimo ip adresu i port korisnika
 				for(int i = 0;i<Users.users.size();i++) {
-					if(Users.users.get(i).getPort()==port) {
+					if(Users.users.get(i).getId()==id) {
 						ip = Users.users.get(i).getIp();
+						port = Users.users.get(i).getPort();
 						break;
 					}
 				}
