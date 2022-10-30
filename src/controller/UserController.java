@@ -194,6 +194,7 @@ public class UserController extends Thread {
 			//proveravamo postoji li user sa tim emailom
 			String email = inputStream.readUTF();
 			int status = dataBase.checkEmail(email);
+			
 			//saljemo rezultat pretrage
 			outputStream.writeInt(5);
 			outputStream.writeInt(status);
@@ -203,6 +204,7 @@ public class UserController extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
 	private void getContacts() {
 		
 		try {
